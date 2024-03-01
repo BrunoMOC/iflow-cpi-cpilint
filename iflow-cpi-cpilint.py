@@ -86,18 +86,20 @@ if __name__ == "__main__":
         api_url_get_iflow = prefix_url + "/api/v1/IntegrationPackages('{id}')/IntegrationDesigntimeArtifacts"
         api_url_download = prefix_url + "/api/v1/IntegrationDesigntimeArtifacts(Id='{id}',Version='{version}')/$value"
         version_value = "active"
-
+        iflow_names_new = []
+        
         headers = get_auth_header(auth_type, client_id, client_secret, auth_api_url=auth_api_url)
 
         package_names = get_package_names(api_url_get_packs, headers)
         with ThreadPoolExecutor(max_workers=5) as executor:
             for package_name in package_names:
                 iflow_names = get_iflows_names(package_name, api_url_get_iflow, headers)
+                iflow_names_new.extend(iflow_names)
                 for iflow_name in iflow_names:
                     executor.submit(download_zip_file, api_url_download, iflow_name, version_value, headers)
 
         if choise == "y":
-            run_cpi_lint(iflow_names, rules_xml_path)
+            run_cpi_lint(iflow_names_new, rules_xml_path)
 
     elif choose == "2":
         auth_type = "basic"
@@ -111,6 +113,7 @@ if __name__ == "__main__":
         api_url_get_iflow = tenant + "/api/v1/IntegrationPackages('{id}')/IntegrationDesigntimeArtifacts"
         api_url_download = tenant + "/api/v1/IntegrationDesigntimeArtifacts(Id='{id}',Version='{version}')/$value"
         version_value = "active"
+        iflow_names_new = []
 
         headers = get_auth_header(auth_type, client_id=None, client_secret=None, s_user=s_user, password=password)
 
@@ -118,11 +121,13 @@ if __name__ == "__main__":
         with ThreadPoolExecutor(max_workers=5) as executor:
             for package_name in package_names:
                 iflow_names = get_iflows_names(package_name, api_url_get_iflow, headers)
+                iflow_names_new.extend(iflow_names)
                 for iflow_name in iflow_names:
                     executor.submit(download_zip_file, api_url_download, iflow_name, version_value, headers)
 
+        #print(iflow_names_new)
         if choise == "y":
-            run_cpi_lint(iflow_names, rules_xml_path)
+            run_cpi_lint(iflow_names_new, rules_xml_path)
             
     end_time = time.time()
     
